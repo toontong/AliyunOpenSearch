@@ -1,19 +1,20 @@
 // 阿里云开放搜索 golang sdk
 // Doc:https://help.aliyun.com/document_detail/opensearch/api-reference/api-interface/search-related.html?spm=5176.docopensearch/api-reference/terminology.2.6.8gxPsl
 
-package AliunOpenSearch
+package AliyunOpenSearch
 
 import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"net/url"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/astaxie/beego"
+	// "github.com/astaxie/beego"
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -26,7 +27,7 @@ type OpenSearchClient struct {
 	signVersion string
 }
 
-// baseUrl: like: "http://opensearch.aliyun.com" 
+// baseUrl: like: "http://opensearch.aliyun.com"
 func NewOpenSearchClient(baseUrl, acId, secret string) *OpenSearchClient {
 	cli := new(OpenSearchClient)
 	cli.version = "v2"
@@ -42,7 +43,7 @@ func NewOpenSearchClient(baseUrl, acId, secret string) *OpenSearchClient {
 func (self *OpenSearchClient) Search(index_name, key_word string, page int, per_page int, sort string) (json string) {
 	key_word = strings.TrimSpace(key_word)
 	if key_word == "" {
-		beego.BeeLogger.Error("search keyword  can not be empty string.")
+		log.Printf("search keyword  can not be empty string.")
 		return ""
 	}
 
@@ -110,7 +111,7 @@ func signature(params map[string]string, method, secret string) (sign string) {
 
 func (self *OpenSearchClient) call(method string, path string, params map[string]string) string {
 	if method != "GET" {
-		beego.BeeLogger.Error("aliyun OpenSearchClient just accessed method of GET or POST. now=[%s]", method)
+		log.Printf("aliyun OpenSearchClient just accessed method of GET or POST. now=[%s]", method)
 		return ""
 	}
 
@@ -134,7 +135,7 @@ func (self *OpenSearchClient) call(method string, path string, params map[string
 		for k, v := range params {
 			val.Add(k, v)
 		}
-		beego.BeeLogger.Debug("Called URL: ", self.baseUrl+path+"?"+val.Encode())
+		log.Printf("Called URL: ", self.baseUrl+path+"?"+val.Encode())
 		s, err = httplib.Get(self.baseUrl+path+"?"+val.Encode()).Debug(true).SetTimeout(connTimeout, readTimeout).String()
 	} else {
 		req := httplib.Post(self.baseUrl+path).SetTimeout(connTimeout, readTimeout)
@@ -145,7 +146,7 @@ func (self *OpenSearchClient) call(method string, path string, params map[string
 		s, err = req.String()
 	}
 	if err != nil {
-		beego.BeeLogger.Error("OpenSearchClient [%s] [%s] [%s] err=[%s]",
+		log.Printf("OpenSearchClient [%s] [%s] [%s] err=[%s]",
 			method, self.baseUrl, path, err)
 	}
 	return s
